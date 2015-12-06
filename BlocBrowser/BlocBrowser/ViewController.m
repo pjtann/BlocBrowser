@@ -55,7 +55,9 @@
     self.textField.returnKeyType = UIReturnKeyDone;
     self.textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
-    self.textField.placeholder = NSLocalizedString(@"Website URL", @"Placeholder text for web browser URL field.");
+    //self.textField.placeholder = NSLocalizedString(@"Website URL", @"Placeholder text for web browser URL field.");
+    self.textField.placeholder = NSLocalizedString(@"Website URL or Search String", @"Placeholder text for web browser URL field.");
+    
     self.textField.backgroundColor = [UIColor colorWithWhite:220/225.0f alpha:1];
     self.textField.delegate = self;
     
@@ -169,27 +171,42 @@
 
 #pragma mark - UITextFieldDelegate
 
-
 // method to handle changes to the URL field = accept a URL
 -(BOOL) textFieldShouldReturn:(UITextField *)textField{
     [textField resignFirstResponder];
-    
-    NSString *URLString = textField.text;
-    
-    NSURL *URL = [NSURL URLWithString:URLString];
-    
-    // if the URL doesn't have a scheme entered with it we will assume the user meant http:// and add it in for them
-    if (!URL.scheme){
-        // the user didn't type http: or https:
-        URL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@", URLString]];
-        
+    // set a variable to hold final URL string being built
+    NSURL *finalURL = nil;
+    // test for any white spaces in the string entered
+    NSRange spaces = [textField.text rangeOfCharacterFromSet:
+                      [NSCharacterSet whitespaceCharacterSet]];
+    // if blank spaces are found then fill them with plus sign
+    if (spaces.location != NSNotFound) {
+        NSString *checkStringForSpaces = [textField.text stringByReplacingOccurrencesOfString:@" " withString:@"+"];
+        // then append the new string to a google search
+        NSString *URLSearchString = checkStringForSpaces;
+        NSURL *searchURL = [NSURL URLWithString:
+                        [NSString stringWithFormat:@"http://www.google.com/search?q=%@", URLSearchString]];
+        // fill the newly built string into a variable to use outside the if statement
+        finalURL = searchURL;
+    }
+    // if no white spaces then build string from user input and check for scheme
+    if (spaces.location == NSNotFound) {
+        NSString *URLString = textField.text;
+        NSURL *URL = [NSURL URLWithString:URLString];
+        if (!URL.scheme){
+            // the user didn't type http: or https:
+            URL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@", URLString]];
+        }
+        // fill the newly built string into a variable to use outside the if statement
+        finalURL = URL;
     }
     
-    if (URL){
-        NSURLRequest *request = [NSURLRequest requestWithURL:URL];
-        [self.webView loadRequest:request];
-        
-    }
+        // if we have a newly built string then submit to the view for loading
+        if (finalURL){
+            NSURLRequest *request = [NSURLRequest requestWithURL:finalURL];
+            [self.webView loadRequest:request];
+    
+            }
     return NO;
     
 }
