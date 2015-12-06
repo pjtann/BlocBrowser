@@ -73,17 +73,19 @@
     [self.reloadButton setEnabled:NO];
     
     [self.backButton setTitle:NSLocalizedString(@"Back", @"Back command") forState:UIControlStateNormal];
-    [self.backButton addTarget:self.webView action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
+    //[self.backButton addTarget:self.webView action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
     
     [self.forwardButton setTitle:NSLocalizedString(@"Forward", @"Forward command") forState:UIControlStateNormal];
-    [self.forwardButton addTarget:self.webView action:@selector(goForward) forControlEvents:UIControlEventTouchUpInside];
+    //[self.forwardButton addTarget:self.webView action:@selector(goForward) forControlEvents:UIControlEventTouchUpInside];
     
     [self.stopButton setTitle:NSLocalizedString(@"Stop", @"Stop command") forState:UIControlStateNormal];
-    [self.stopButton addTarget:self.webView action:@selector(stopLoading) forControlEvents:UIControlEventTouchUpInside];
+    //[self.stopButton addTarget:self.webView action:@selector(stopLoading) forControlEvents:UIControlEventTouchUpInside];
     
     [self.reloadButton setTitle:NSLocalizedString(@"Reload", @"Reload comment") forState:UIControlStateNormal];
-    [self.reloadButton addTarget:self.webView action:@selector(reload) forControlEvents:UIControlEventTouchUpInside];
+    //[self.reloadButton addTarget:self.webView action:@selector(reload) forControlEvents:UIControlEventTouchUpInside];
  
+    [self addButtonTargets];
+    
     
 //    // hard coded for testing to make the web view load wikipedia.org when the view loads
 //    NSString *urlString = @"http://wikipedia.org";
@@ -253,11 +255,50 @@
     self.backButton.enabled = [self.webView canGoBack];
     self.forwardButton.enabled = [self.webView canGoForward];
     self.stopButton.enabled = self.webView.isLoading;
-    self.reloadButton.enabled = !self.webView.isLoading;
     
-    
+    // for reload we need to ensure that the web view has an NSURLRequest with accompanying NSURL, otherwise there will be nothing to load
+    self.reloadButton.enabled = !self.webView.isLoading && self.webView.URL;
+   
     
 }
+
+-(void) resetWebView {
+    // removes old web view from the view hierarchy
+    [self.webView removeFromSuperview];
+    
+    // creates a new empty web view and adds it back in
+    WKWebView *newWebView = [[WKWebView alloc]init];
+    newWebView.navigationDelegate = self;
+    [self.view addSubview:newWebView];
+    
+    // clears teh URL field
+    self.webView = newWebView;
+    
+    // calls addButtonTargets method to point the buttons to the new web view
+    [self addButtonTargets];
+    
+    // updates the buttons and navigation title to heir proper state
+    self.textField.text = nil;
+    [self updateButtonsAndTitle];
+    
+}
+
+// in this method the for loop will loop through each button and remove the reference to the old view. Then the method will then make the new web view the target for each of the buttons just as we did in the original loadView method which now just calls this method
+-(void) addButtonTargets{
+    for (UIButton *button in @[self.backButton, self.forwardButton, self.stopButton, self.reloadButton]) {
+        [button removeTarget:nil action:NULL forControlEvents:UIControlEventTouchUpInside];
+
+        }
+    
+    // we have to re-point the buttons to the new view or they will continue to point to the old view which no longer exists and will cause a crash
+    [self.backButton addTarget:self.webView action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
+    [self.forwardButton addTarget:self.webView action:@selector(goForward) forControlEvents:UIControlEventTouchUpInside];
+    [self.stopButton addTarget:self.webView action:@selector(stopLoading) forControlEvents:UIControlEventTouchUpInside];
+    [self.reloadButton addTarget:self.webView action:@selector(reload) forControlEvents:UIControlEventTouchUpInside];
+    
+         
+    }
+
 
 //- (void)didReceiveMemoryWarning {
 //    [super didReceiveMemoryWarning];
