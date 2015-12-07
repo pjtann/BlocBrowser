@@ -130,6 +130,22 @@
     
     
     
+    // Define an alert message box as a welcome to the user
+    UIAlertController *welcomeMessage = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Hello", "Hello1b") message:@"Welcome to Bloc Browser" preferredStyle:UIAlertControllerStyleAlert];
+//    // Or this version without the NSLocalizedString usage
+//    UIAlertController *welcomeMessage = [UIAlertController alertControllerWithTitle:(NSString *)(@"Hello") message:@"Welcome to Bloc Browser" preferredStyle:UIAlertControllerStyleAlert];
+    
+    // create the associated action for the message box
+    UIAlertAction *welcomeAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleCancel handler:nil];
+    
+    // add the message to box
+    [welcomeMessage addAction:welcomeAction];
+    
+    // present the message box to the view
+    [self presentViewController:welcomeMessage animated:YES completion:nil];
+    
+    
+    
 }
 
 // gives the web view a size; in this case the full size of the main view
