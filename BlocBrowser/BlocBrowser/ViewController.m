@@ -348,6 +348,19 @@
     }
 }
 
+-(void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didTryToPanWithOffset:(CGPoint)offset{
+    CGPoint startingPoint = toolbar.frame.origin; // get top-left corner point of where toolbar is located
+    CGPoint newPoint = CGPointMake(startingPoint.x + offset.x, startingPoint.y + offset.y); // the new/future top-left corner calculated by adding the difference in x and the difference in y to the original top-left coordinate
+    
+    CGRect potentialNewFrame = CGRectMake(newPoint.x, newPoint.y, CGRectGetWidth(toolbar.frame), CGRectGetHeight(toolbar.frame)); // create a new CGRect that represents the toolbars potential new frame
+    
+    if (CGRectContainsRect(self.view.bounds, potentialNewFrame)) { // will return true/YES if the potentialNewFrame's (rect2) proposed bounds are contained completely within self.view.bounds (rect1) or NO if it is not which means it's trying to be placed outside the view
+        toolbar.frame = potentialNewFrame;
+        
+    }
+}
+
+
 
 //- (void)didReceiveMemoryWarning {
 //    [super didReceiveMemoryWarning];

@@ -16,6 +16,13 @@
 @property (nonatomic, strong) NSArray *labels;
 @property (nonatomic, weak) UILabel *currentLabel;
 
+// property to store the tap recognizer
+@property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
+// propert to store the panning recognizer
+@property (nonatomic, strong) UIPanGestureRecognizer *panGesture;
+
+
+
 @end
 
 
@@ -64,11 +71,58 @@
         for (UILabel *thisLabel in self.labels) {
             [self addSubview:thisLabel];
         }
+        
+        // tells the gesture recognizer which method to call when a tap is detected by using the tapFired
+        self.tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapFired:)];
+        // tells the view (self) to route the touch events through this gesture recognizer
+        [self addGestureRecognizer:self.tapGesture];
+        
+        self.panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panFired:)];
+        [self addGestureRecognizer:self.panGesture];
+        
+        
+        
     }
 
     return self;
     
 }
+
+-(void) tapFired:(UITapGestureRecognizer *) recognizer{
+    if (recognizer.state == UIGestureRecognizerStateRecognized) { // check for the proper state; a tap was recognized
+        CGPoint location = [recognizer locationInView:self]; // calculates and stores x-y coordinates of the gestures location (with respect to self's bounds
+        UIView *tappedView = [self hitTest:location withEvent:nil]; // invoke hitTest to determine which view (button as a view in our case) recieved the tap
+        
+        if ([self.labels containsObject:tappedView]) { // check if the view that was tapped was one of our toolbar labels, and if so verify our delegate for compatibility before performing the appropriate method call
+            if ([self.delegate respondsToSelector:@selector(floatingToolbar:didSelectButtonWithTitle:)]) {
+                [self.delegate floatingToolbar:self didSelectButtonWithTitle:((UILabel *)tappedView).text];
+                
+            }
+        }
+        
+        
+    }
+}
+
+// this method will be invoked when a pan gesture has been detected. We're not looking for where the gesture occured as with the selecting of one of the toolbar buttons/views, but instead which direction the toolbar is traveling in. The Translation is how far the users fingers have moved in each direction since the touch event began. This is called many times during a pan gesture because it's really just a linear action of small pans traveling a few pixels at at time.
+-(void) panFired:(UIPanGestureRecognizer *) recognizer{
+    if (recognizer.state == UIGestureRecognizerStateChanged) {
+        CGPoint translation = [recognizer translationInView:self];
+        
+        NSLog(@"New translation: %@", NSStringFromCGPoint(translation));
+        
+        if ([self.delegate respondsToSelector:@selector(floatingToolbar:didTryToPanWithOffset:)]) {
+            [self.delegate floatingToolbar:self didTryToPanWithOffset:translation];
+            
+        }
+        
+        [recognizer setTranslation:CGPointZero inView:self]; // reseting the translation to zero so it can get the difference of each tiny little pan each time the method is called. As described above a pan is really many tiny linear pans moving a few pixels at a time.
+        
+    }
+}
+
+
+
 
 // this method will get called anytime a views frame is changed
 -(void) layoutSubviews{
@@ -123,54 +177,59 @@
     }
 }
 
-// When a touch begins, we'll dim the label to make it look highlighted. We'll also keep track of which label was most recently touched
--(void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
-    UILabel *label = [self labelFromTouches:touches withEvent:event];
-    
-    self.currentLabel = label;
-    self.currentLabel.alpha = 0.5;
-    
-}
+//// When a touch begins, we'll dim the label to make it look highlighted. We'll also keep track of which label was most recently touched
+//-(void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+//    UILabel *label = [self labelFromTouches:touches withEvent:event];
+//    
+//    self.currentLabel = label;
+//    self.currentLabel.alpha = 0.5;
+//    
+//}
 
-// When a touch moves, we'll check if the user is still touching the same label. If the user drags off the label, we'll reset the alpha. If they drag back on, we'll dim it again
--(void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
-    UILabel *label = [self labelFromTouches:touches withEvent:event];
-    
-    if (self.currentLabel != label) {
-        // the label being touched is no longer the initial label
-        self.currentLabel.alpha = 1;
-    }else{
-        // the label being touched is the initial label
-        self.currentLabel.alpha = 0.5;
-        
-    }
-}
+//// When a touch moves, we'll check if the user is still touching the same label. If the user drags off the label, we'll reset the alpha. If they drag back on, we'll dim it again
+//-(void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+//    UILabel *label = [self labelFromTouches:touches withEvent:event];
+//    
+//    if (self.currentLabel != label) {
+//        // the label being touched is no longer the initial label
+//        self.currentLabel.alpha = 1;
+//    }else{
+//        // the label being touched is the initial label
+//        self.currentLabel.alpha = 0.5;
+//        
+//    }
+//}
 
-// If the user lifts their finger, the touch is ended. In this case, check if their finger was lifted from the same label they started with. If so, print a log to the console and inform the delegate. Either way, reset the variables we're tracking to their initial values
--(void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
-    UILabel *label = [self labelFromTouches:touches withEvent:event];
-    
-    if (self.currentLabel == label) {
-        NSLog(@"Label tapped: %@", self.currentLabel.text);
-        
-        if ([self.delegate respondsToSelector:@selector(floatingToolbar:didSelectButtonWithTitle:)]) {
-            [self.delegate floatingToolbar:self didSelectButtonWithTitle:self.currentLabel.text];
-            
-        }
-    }
-    
-    self.currentLabel.alpha = 1;
-    self.currentLabel = nil;
-    
-}
+//// If the user lifts their finger, the touch is ended. In this case, check if their finger was lifted from the same label they started with. If so, print a log to the console and inform the delegate. Either way, reset the variables we're tracking to their initial values
+//-(void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+//    UILabel *label = [self labelFromTouches:touches withEvent:event];
+//    
+//    if (self.currentLabel == label) {
+//        NSLog(@"Label tapped: %@", self.currentLabel.text);
+//        
+//        if ([self.delegate respondsToSelector:@selector(floatingToolbar:didSelectButtonWithTitle:)]) {
+//            [self.delegate floatingToolbar:self didSelectButtonWithTitle:self.currentLabel.text];
+//            
+//        }
+//    }
+//    
+//    self.currentLabel.alpha = 1;
+//    self.currentLabel = nil;
+//    
+//}
 
-// If the touch is cancelled, reset the same variables we did in touchesMoved:…:
+//// If the touch is cancelled, reset the same variables we did in touchesMoved:…:
+//
+//-(void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event{
+//    self.currentLabel.alpha = 1;
+//    self.currentLabel = nil;
+//    
+//}
 
--(void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event{
-    self.currentLabel.alpha = 1;
-    self.currentLabel = nil;
-    
-}
+
+
+
+
 
 #pragma mark - Button Enabling
 

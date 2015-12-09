@@ -19,6 +19,9 @@
 
 -(void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didSelectButtonWithTitle:(NSString *)title;
 
+// a delegate method to indicate that the toolbar wishes to be moved around due to the panGesture and the direction it wishes to move and then the view controller can decide whether or not to actually move the toolbar or not. This is done through a delegate rather than allowing the toolbar to move itself around in the superview because the toolbar doesn't know about all the other objects and the superview. Changes made by an object should only affect themelves and objects they own as per best practices; this way the object in this case the toolbar will not collide with other objects it doesn't know anthign about or control
+-(void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didTryToPanWithOffset:(CGPoint)offset;
+
 
 @end // end of the protocol definition
 
@@ -32,7 +35,6 @@
 -(void) setEnabled:(BOOL)enabled forButtonWithTitle:(NSString *)title;
 
 @property (nonatomic, weak) id <AwesomeFloatingToolbarDelegate> delegate;
-
 
 
 
