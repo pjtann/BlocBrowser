@@ -192,7 +192,25 @@
 //        
 //    }
   
-    self.awesomeToolbar.frame = CGRectMake(20, 100, 280, 60);
+//    // original frame sizing
+//    self.awesomeToolbar.frame = CGRectMake(20, 100, 280, 60);
+    
+//    // frame as a large square
+//    self.awesomeToolbar.frame = CGRectMake(20, 100, 280, 280);
+//    
+//    // frame as a shorter length rectangle
+//    self.awesomeToolbar.frame = CGRectMake(20, 100, 120, 60);
+//    
+//    // frame as a small square
+//    self.awesomeToolbar.frame = CGRectMake(20, 100, 80, 80);
+//    
+//    // frame as a compromise between lenght and width
+//    self.awesomeToolbar.frame = CGRectMake(20, 100, 200, 100);
+    
+    // frame as a really thin rectangle lower on screen
+    self.awesomeToolbar.frame = CGRectMake(40, 200, 240, 30);
+    
+    
     
     
 }
@@ -337,15 +355,28 @@
     
     NSLog(@"In didSelectButtonWithTitle..%@", title);
     
-    if ([title isEqual:NSLocalizedString(@"Back", @"Back command")]) {
+//    if ([title isEqual:NSLocalizedString(@"Back", @"Back command")]) {
+//        [self.webView goBack];
+//    } else if ([title isEqual:NSLocalizedString(@"Forward", @"Forward command")]) {
+//        [self.webView goForward];
+//    } else if ([title isEqual:NSLocalizedString(@"Stop", @"Stop command")]) {
+//        [self.webView stopLoading];
+//    } else if ([title isEqual:NSLocalizedString(@"Refresh", @"Reload command")]) {
+//        [self.webView reload];
+//    }
+    
+    // changed to use the constants defined above
+    if ([title isEqual:KWebBrowserBackString]) {
         [self.webView goBack];
-    } else if ([title isEqual:NSLocalizedString(@"Forward", @"Forward command")]) {
+    } else if ([title isEqual:KWebBrowserForwardString]) {
         [self.webView goForward];
-    } else if ([title isEqual:NSLocalizedString(@"Stop", @"Stop command")]) {
+    } else if ([title isEqual:KWebBrowserStopString]) {
         [self.webView stopLoading];
-    } else if ([title isEqual:NSLocalizedString(@"Refresh", @"Reload command")]) {
+    } else if ([title isEqual:KWebBrowserRefreshString]) {
         [self.webView reload];
     }
+    
+    
 }
 
 
